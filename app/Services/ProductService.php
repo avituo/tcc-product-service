@@ -8,7 +8,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 class ProductService
 {
     /**
-     * @param  array{name?: mixed, is_active?: mixed}  $filters
+     * @param  array{name?: mixed}  $filters
      */
     public function getListPaginated(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
@@ -17,9 +17,7 @@ class ProductService
         if (! empty($filters['name'])) {
             $query->where('name', 'like', '%'.$filters['name'].'%');
         }
-        if (($filters['is_active'] ?? null) !== null) {
-            $query->where('is_active', $filters['is_active']);
-        }
+        $query->where('is_active', true);
 
         return $query
             ->orderBy('id', 'desc')

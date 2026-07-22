@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -20,6 +21,7 @@ class Product extends Model
         'discount',
         'quantity',
         'is_active',
+        'version',
     ];
 
     protected function casts(): array
@@ -28,13 +30,7 @@ class Product extends Model
             'price' => 'decimal:2',
             'discount' => 'decimal:2',
             'is_active' => 'boolean',
+            'version' => 'integer',
         ];
-    }
-
-    public function orders(): BelongsToMany
-    {
-        return $this->belongsToMany(Order::class)
-            ->withPivot(['quantity', 'unit_price', 'subtotal'])
-            ->withTimestamps();
     }
 }

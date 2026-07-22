@@ -2,6 +2,10 @@
 
 return [
 
+    'gateway' => [
+        'key' => env('GATEWAY_INTERNAL_KEY'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services
