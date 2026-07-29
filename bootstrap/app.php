@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureGatewayRequest;
 use App\Http\Middleware\RequireRole;
+use App\Http\Middleware\ResolveGatewayIdentity;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'gateway' => EnsureGatewayRequest::class,
+            'gateway.identity' => ResolveGatewayIdentity::class,
             'role' => RequireRole::class,
         ]);
     })

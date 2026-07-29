@@ -11,6 +11,11 @@ class Product extends Model
     use HasFactory;
     use SoftDeletes;
 
+    protected $attributes = [
+        'is_active' => true,
+        'version' => 1,
+    ];
+
     protected $fillable = [
         'name',
         'description',

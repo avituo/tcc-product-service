@@ -24,7 +24,7 @@ class StockReservationTest extends TestCase
 
     public function test_snapshot_and_reservation_use_discount_and_are_idempotent(): void
     {
-        $product = Product::factory()->create(['price' => '25.00', 'discount' => '2.50', 'quantity' => 5, 'version' => 1]);
+        $product = Product::factory()->create(['price' => '25.00', 'discount' => '2.50', 'quantity' => 5, 'version' => 1, 'is_active' => true]);
         $headers = ['X-Gateway-Key' => 'test-gateway-key'];
         $this->withHeaders($headers)->postJson('/api/v1/internal/products/snapshots', ['product_ids' => [$product->id, 999]])
             ->assertOk()->assertJsonPath('data.0.sale_price', '22.50')->assertJsonPath('missing_product_ids.0', 999);
@@ -45,7 +45,7 @@ class StockReservationTest extends TestCase
 
     public function test_stock_and_version_conflicts_are_stable(): void
     {
-        $product = Product::factory()->create(['quantity' => 1, 'version' => 3]);
+        $product = Product::factory()->create(['quantity' => 1, 'version' => 3, 'is_active' => true]);
         $headers = ['X-Gateway-Key' => 'test-gateway-key', 'Idempotency-Key' => 'order-2'];
         $payload = ['order_id' => 'order-2', 'expires_at' => now()->addHour()->toIso8601String(),
             'items' => [['product_id' => $product->id, 'quantity' => 2, 'expected_version' => 3]]];
@@ -55,5 +55,33 @@ class StockReservationTest extends TestCase
         $payload['items'][0] = ['product_id' => $product->id, 'quantity' => 1, 'expected_version' => 2];
         $this->withHeaders([...$headers, 'Idempotency-Key' => 'order-3'])->postJson('/api/v1/internal/stock/reservations', $payload)
             ->assertConflict()->assertJsonPath('code', 'product_version_conflict');
+    }
+
+    public function test_pending_reservation_can_be_replaced_atomically(): void
+    {
+        $firstProduct = Product::factory()->create(['quantity' => 5, 'version' => 1, 'price' => '20.00', 'discount' => '5.00', 'is_active' => true]);
+        $secondProduct = Product::factory()->create(['quantity' => 4, 'version' => 1, 'price' => '10.00', 'discount' => '0.00', 'is_active' => true]);
+        $headers = ['X-Gateway-Key' => 'test-gateway-key'];
+        $reservation = $this->withHeaders([...$headers, 'Idempotency-Key' => 'replace-order'])
+            ->postJson('/api/v1/internal/stock/reservations', [
+                'order_id' => 'replace-order',
+                'expires_at' => now()->addHour()->toIso8601String(),
+                'items' => [['product_id' => $firstProduct->id, 'quantity' => 2, 'expected_version' => 1]],
+            ])->assertCreated();
+
+        $this->withHeaders($headers)
+            ->putJson('/api/v1/internal/stock/reservations/'.$reservation->json('data.id'), [
+                'expires_at' => now()->addHour()->toIso8601String(),
+                'items' => [
+                    ['product_id' => $firstProduct->id, 'quantity' => 1, 'expected_version' => 2],
+                    ['product_id' => $secondProduct->id, 'quantity' => 3, 'expected_version' => 1],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonCount(2, 'data.items')
+            ->assertJsonPath('data.items.0.unit_price', '15.00');
+
+        $this->assertSame(4, $firstProduct->refresh()->quantity);
+        $this->assertSame(1, $secondProduct->refresh()->quantity);
     }
 }
