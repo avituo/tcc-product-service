@@ -6,8 +6,8 @@ use App\Actions\ChangeStockReservationStatus;
 use App\Actions\ReserveStock;
 use App\Exceptions\ApiProblem;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ReserveStockRequest;
-use App\Http\Resources\StockReservationResource;
+use App\Http\Requests\Api\V1\ReserveStockRequest;
+use App\Http\Resources\Api\V1\StockReservationResource;
 use App\Models\StockReservation;
 use Illuminate\Http\JsonResponse;
 
@@ -27,11 +27,6 @@ class StockReservationController extends Controller
     public function show(StockReservation $reservation): StockReservationResource
     {
         return new StockReservationResource($reservation->load('items'));
-    }
-
-    public function confirm(StockReservation $reservation, ChangeStockReservationStatus $changeStatus): StockReservationResource
-    {
-        return new StockReservationResource($changeStatus->confirm($reservation));
     }
 
     public function destroy(StockReservation $reservation, ChangeStockReservationStatus $changeStatus): StockReservationResource

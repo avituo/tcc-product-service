@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\V1\Internal;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ProductSnapshotsRequest;
-use App\Http\Resources\ProductSnapshotResource;
+use App\Http\Requests\Api\V1\ProductSnapshotsRequest;
+use App\Http\Resources\Api\V1\ProductSnapshotResource;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 

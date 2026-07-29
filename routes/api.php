@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Internal\ConfirmStockReservationController;
 use App\Http\Controllers\Api\V1\Internal\ProductSnapshotController;
 use App\Http\Controllers\Api\V1\Internal\StockReservationController;
 use App\Http\Controllers\Api\V1\ProductController;
@@ -19,7 +20,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/products/snapshots', ProductSnapshotController::class);
         Route::post('/stock/reservations', [StockReservationController::class, 'store']);
         Route::get('/stock/reservations/{reservation}', [StockReservationController::class, 'show']);
-        Route::post('/stock/reservations/{reservation}/confirm', [StockReservationController::class, 'confirm']);
+        Route::post('/stock/reservations/{reservation}/confirm', ConfirmStockReservationController::class);
         Route::delete('/stock/reservations/{reservation}', [StockReservationController::class, 'destroy']);
     });
 });
