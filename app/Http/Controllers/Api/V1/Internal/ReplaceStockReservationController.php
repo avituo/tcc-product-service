@@ -18,8 +18,6 @@ class ReplaceStockReservationController extends Controller
         StockReservation $reservation,
         ReplaceStockReservation $replaceReservation,
     ): StockReservationResource {
-        return new StockReservationResource(
-            $replaceReservation->execute($reservation, $request->validated()),
-        );
+        return new StockReservationResource($replaceReservation->execute($reservation, $request->validated()));
     }
 }
