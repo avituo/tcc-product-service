@@ -23,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('api', function (Request $request): Limit {
+            if (config('experiment.disable_rate_limiting')) {
+                return Limit::none();
+            }
+
             return Limit::perMinute(120)->by((string) ($request->header('X-User-Id') ?: $request->ip()));
         });
     }
